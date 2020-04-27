@@ -154,10 +154,14 @@
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
 
-  // tip for rectangles
+  // tip for regions and bars
   var tip = d3.tip()
-  .attr('class', 'd3-tip')
-  .offset([-10, 0]);
+    .attr('class', 'd3-tip')
+    .offset([-10, 0]);
+  // tip for frame
+  var tipFrame = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, -200]);
 
   // Specify the color domain
   colorObjects.domain(objectTypes);
@@ -245,6 +249,9 @@
     /***** Tooltip creation *****/
     tip.html(d => getBBoxToolTipText.call(this, d));
     videoPlayerGroup.call(tip);
+    barChartBarsGroup.call(tip);
+    tipFrame.html(d => getFrameToolTipText.call(this, d));
+    videoPlayerGroup.call(tipFrame);
 
     // Show panel if clicked on video
     videoPlayerGroup.on("click", function () {
@@ -437,6 +444,10 @@
     if (d.frame_number === currentVideo.size) {
       resetOperation();
     }
+    // Show frame-level tooltip
+    videoPlayerGroup.selectAll("image")
+      .on("mouseover", tipFrame.show)
+      .on("mouseout", tipFrame.hide);
     // Clear any existing bounding boxes
     videoPlayerGroup.selectAll(".region").remove();
     // Put regions
@@ -464,9 +475,9 @@
             return i.region_number !== r.region_number;
           });
         // Show the tooltip
-        return tip.show;
+        return tip.show(r);
       })
-      .on("mouseout", function () {
+      .on("mouseout", function (r) {
         // Show the region images with highest score in the panel
         // Extract the region with highest score
         var detectedRegion = d.regions.sort((x, y) => d3.descending(x.score, y.score))[0];
@@ -477,7 +488,7 @@
           .classed("selected", false)
           .classed("hide", false);
         // Hide the tooltip
-        return tip.hide;
+        return tip.hide(r);
       });
     
     if (Array.isArray(d.regions) && d.regions.length) {
@@ -518,9 +529,9 @@
               return i.region_number !== r.region_number;
             });
           // Show the tooltip
-          return tip.show;
+          return tip.show(r);
         })
-        .on("mouseout", function () {
+        .on("mouseout", function (r) {
           // Show the region images with highest score in the panel
           // Update images inside the panel
           updateRegionImages(sortedRegions[0]);
@@ -529,7 +540,7 @@
             .classed("selected", false)
             .classed("hide", false);
           // Hide the tooltip
-          return tip.hide;
+          return tip.hide(r);
         });
       // add percentages
       bars.append("text")
@@ -560,7 +571,19 @@
    */
   function getBBoxToolTipText(r) {
     return "Region: <strong>" + r.label + " #" + r.region_number + "</strong><br>" +
-      "Anomaly score: <strong>" + r.score.toFixed(5);
+      "Anomaly score: <strong>" + r.score.toFixed(3);
+  }
+
+  /**
+   * Gets the text associated with the tooltip.
+   *
+   * @param f               The frame hovered by the mouse.
+   * @return {string}       The text to display in the tooltip.
+   */
+  function getFrameToolTipText(f) {
+    return "Frame number: <strong>" + f.frame_number + "</strong><br>" +
+      "Frame-level score: <strong>" + f.frame_score.toFixed(3) + "</strong><br>" +
+      "Ground-truth: <strong>" + f.frame_gt + " (" + (f.frame_gt === 1 ? "abnormal" : "normal") + ")";
   }
 
   /**
