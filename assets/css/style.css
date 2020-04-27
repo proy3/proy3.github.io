@@ -1,0 +1,340 @@
+/***** General style *****/
+body {
+  display: table;
+  margin: 20px auto auto;
+  font-family: Arial, sans-serif;
+  zoom: 90%;
+}
+
+h1 {
+  font-size: 1.2em;
+  margin: 15px 0 20px 0;
+}
+
+.row {
+  display: flex;
+}
+
+.row > .col {
+  flex: 1;
+}
+
+.label {
+  text-align: left;
+  line-height: 24px;
+  flex-basis: 100px;
+}
+
+select {
+  width: 100%;
+}
+
+.label,
+select {
+  padding: 5px;
+  margin-left: 25px;
+  margin-right: 25px;
+  font-size: 1em;
+}
+
+button {
+  padding: 5px 10px;
+  color: #FFF;
+  background-color: #666;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: 0;
+}
+
+button.green {
+  background-color: #28a745;
+}
+
+button.green:hover,
+button.green:active {
+  background-color: #238a39;
+}
+
+button.red {
+  background-color: #dc3545;
+}
+
+button.red:hover,
+button.red:active {
+  background-color: #c3323e;
+}
+
+input[type=number] {
+  max-width: 75px;
+  padding: 5px 10px;
+  border: 1px solid #666;
+  border-radius: 4px;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
+
+.pull-center {
+  float: center;
+}
+
+.form-group {
+  display: inline-block;
+  margin-right: 50px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  margin-left: 0px;
+}
+
+p {
+  margin-top: 25px;
+  margin-bottom: 10px;
+  margin-right: 20px;
+  margin-left: 20px;
+  font-size: 1em;
+}
+
+/***** Tabs *****/
+.tabs {
+  width: 1000px;
+  border: 1px solid #666;
+}
+
+.tabs > .header {
+  height: 30px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  text-align: center;
+  line-height: 30px;
+  border-bottom: 1px solid #666;
+}
+
+.tabs > .header > li {
+  background-color: #e6e7e8;
+  cursor: pointer;
+}
+
+.tabs > .header > li:not(:last-child) {
+  border-right: 1px solid #666;
+}
+
+.tabs > .header > li.active {
+  color: #fff;
+  background-color: #4c7d95;
+}
+
+.tabs > .content > .tab {
+  display: none;
+  width: 100%;
+  padding: 20px 10px 10px 10px;
+  box-sizing: border-box;
+}
+
+.tabs > .content {
+  text-align: center;
+}
+
+.tabs > .content > .tab.visible {
+  display: block;
+}
+
+/***** Panel *****/
+#panel {
+  position: absolute;
+  top: 315px;
+  right: 10px;
+  display: none;
+  width: 300px;
+  padding: 15px 10px;
+  text-align: left;
+  font-size: 0.7em;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+#panel button {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  float: right;
+  background-color: #f0f0f0;
+  border: 1px solid #d0d0d0;
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+}
+
+#panel button:hover {
+  background-color: #ccc;
+}
+
+#panel button img {
+  height: 10px;
+}
+
+#panel h1 {
+  margin-top: 0;
+}
+
+#panel h2 {
+  color: #666;
+  font-size: 1em;
+  text-transform: uppercase;
+  text-align: center;
+  padding-right: 100px;
+}
+
+#panel h2.vertical {
+  transform: rotate(-90deg) translateX(-15px) translateY(-155px);
+}
+
+#panel p {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+#panel hr {
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
+#panel .form-group {
+  display: inline-flex;
+  margin-top: -10px;
+  margin-left: 60px;
+}
+
+#panel svg {
+  background-color: white;
+  margin-top: -10px;
+}
+
+#panel svg.spacing {
+  margin-top: -30px;
+}
+
+/***** SVG *****/
+svg {
+  background-color: white;
+}
+
+rect {
+  fill-opacity: 0.8;
+}
+
+rect:hover {
+  fill-opacity: 1;
+}
+
+rect.selected {
+  fill-opacity: 1;
+}
+
+rect.hide {
+  fill-opacity: 0.3;
+  pointer-events: none;
+}
+
+rect.border {
+  fill: none;
+  stroke: black;
+  stroke-width: 1px;
+}
+
+rect.video {
+  fill-opacity: 1;
+  fill: black;
+  stroke: none;
+}
+
+rect.region {
+  fill-opacity: 0.5;
+  stroke-width: 3px;
+}
+
+rect.region:hover {
+  fill-opacity: 0.8;
+}
+
+rect.region.selected {
+  fill-opacity: 0.8;
+}
+
+rect.region.hide {
+  fill-opacity: 0.15;
+  stroke-opacity: 0.5;
+  pointer-events: none;
+}
+
+.axis {
+  shape-rendering: crispEdges
+}
+
+.axis line {
+  display: none;
+}
+
+.axis path {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.y.axis path {
+  fill: none;
+  stroke: black;
+  stroke-width: 1.5;
+  shape-rendering: crispEdges;
+}
+
+.group text {
+  fill: #fff;
+}
+
+#circle circle {
+  fill: none;
+  pointer-events: all;
+}
+
+.chord {
+  fill-opacity: 0.8;
+}
+
+.chord:hover:not(.fade) {
+  fill-opacity: 0.95;
+}
+
+#circle:hover .fade {
+  fill-opacity: 0.1;
+  transition: fill-opacity ease-out 0.1s;
+  pointer-events: none;
+}
+
+/***** Tooltip *****/
+.d3-tip {
+  line-height: 1;
+  padding: 12px;
+  border-radius: 2px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.d3-tip:after {
+  display: inline;
+  top: 100%;
+  left: 0;
+  margin: -1px 0 0 0;
+  box-sizing: border-box;
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}

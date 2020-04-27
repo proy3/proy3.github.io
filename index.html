@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Anomaly Detection - Diagnostic Tool</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <h1>Diagnostic tool for abnormal events detection in videos</h1>
+  <div class="tabs">
+    <ul class="header row">
+      <li class="col active">Anomaly Detection Explorer</li>
+      <li class="col">Anomaly Score Explorer</li>
+    </ul>
+    <div class="content">
+      <section class="tab visible" aria-label="Anomaly Detection Explorer">
+        <!-- Select options -->
+        <div class="row">
+          <div class="label">Dataset:</div>
+          <select class="col" name="dataset" title="Dataset" id="dataset-select"></select>
+        </div>
+        <div class="row">
+          <div class="label">Video:</div>
+          <select class="col" name="video" title="Video" id="video-select"></select>
+        </div>
+        <div class="row">
+          <div class="label">Method:</div>
+          <select class="col" name="method" title="Method" id="method-select"></select>
+        </div>
+        <div class="row">
+          <div class="label">Classifier:</div>
+          <select class="col" name="classifier" title="Classifier" id="classifier-select"></select>
+        </div>
+
+        <!-- Panel window showing region-level anomaly score and region images -->
+        <aside id="panel">
+          <button title="Close">
+            <img alt="Close" src="./assets/img/close.svg">
+          </button>
+          <h1>Top 5 Region-level Anomaly Scores</h1>
+          <svg id="bar-chart-svg"></svg>
+          <hr>
+          <h1>Region images</h1>
+          <h2 class="vertical">Appearance</h2>
+          <svg class="spacing" id="region-real-appear-svg"></svg>
+          <svg class="spacing" id="region-fake-appear-svg"></svg>
+          <h2 class="vertical">Motion</h2>
+          <svg class="spacing" id="region-real-motion-svg"></svg>
+          <svg class="spacing" id="region-fake-motion-svg"></svg>
+          <div class="form-group">
+            <h2>Real</h2>
+            <h2>Prediction</h2>
+          </div>
+        </aside>
+
+        <!-- Video buttons -->
+        <p class="pull-left">FPS: <input id="video-fps" type="number" placeholder="videoFPS" min="1" max="100" value="25"></p>
+        <div class="form-group">
+          <button id="play-circles-button">Play</button>
+          <button class="red" id="stop-circles-button">Stop</button>
+          <button id="reset-circles-button">Reset</button>
+        </div>
+        <p class="pull-right">Frame: <strong id="frame-count">0</strong></p>
+
+        <!-- SVG showing video images -->
+        <svg id="video-player-svg"></svg>
+      </section>
+
+      <section class="tab" aria-label="Anomaly Score Explorer">
+        <!-- Select options -->
+        <div class="row">
+          <div class="label">Dataset:</div>
+          <select class="col" name="dataset" title="Dataset" id="dataset-select"></select>
+        </div>
+        <div class="row">
+          <div class="label">Method:</div>
+          <select class="col" name="method" title="Method" id="method-select"></select>
+        </div>
+        <div class="row">
+          <div class="label">Classifier:</div>
+          <select class="col" name="classifier" title="Classifier" id="classifier-select"></select>
+        </div>
+
+        <!-- SVG showing interactive bubble plot -->
+        <svg id="swarm-plot-svg"></svg>
+      </section>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="assets/libs/d3.js"></script>
+  <script type="text/javascript" src="assets/libs/d3-tip.js"></script>
+
+  <script type="text/javascript" src="assets/scripts/main.js"></script>
+</body>
+</html>

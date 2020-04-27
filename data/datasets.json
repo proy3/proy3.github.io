@@ -1,0 +1,154 @@
+[
+    {
+        "name": "ped1",
+        "resolution": {
+            "width": 238,
+            "height": 158
+        },
+        "videos": [
+            {
+                "name": "01",
+                "size": 200
+            },
+            {
+                "name": "02",
+                "size": 200
+            }
+        ],
+        "structures": [
+            {
+                "name": "ds_50_v2",
+                "mod": "RetinaNet",
+                "mct": 50
+            }
+        ],
+        "models": [
+            {
+                "name": "method_v1_ped1_ds_50_fg_1_v2",
+                "classifiers": [
+                    {
+                        "name": "method_v1_ped1_ds_50_fg_1_v2_0_class_v1",
+                        "technique": "GAN"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "ped2",
+        "resolution": {
+            "width": 360,
+            "height": 240
+        },
+        "videos": [
+            {
+                "name": "01",
+                "size": 180
+            },
+            {
+                "name": "02",
+                "size": 180
+            },
+            {
+                "name": "03",
+                "size": 150
+            },
+            {
+                "name": "04",
+                "size": 180
+            },
+            {
+                "name": "05",
+                "size": 150
+            }
+        ],
+        "structures": [
+            {
+                "name": "ds_50_v2",
+                "mod": "RetinaNet",
+                "mct": 50
+            }
+        ],
+        "models": [
+            {
+                "name": "method_v1_ped2_ds_50_fg_1_v2",
+                "classifiers": [
+                    {
+                        "name": "method_v1_ped2_ds_50_fg_1_v2_0_class_v1",
+                        "technique": "GAN"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "Avenue",
+        "resolution": {
+            "width": 640,
+            "height": 360
+        },
+        "videos": [
+            {
+                "name": "01",
+                "size": 1439
+            }
+        ],
+        "structures": [
+            {
+                "name": "ds_50_v2",
+                "mod": "RetinaNet",
+                "mct": 50
+            }
+        ],
+        "models": [
+            {
+                "name": "method_v1_avenue_ds_50_fg_3_v2",
+                "classifiers": [
+                    {
+                        "name": "method_v1_avenue_ds_50_fg_3_v2_0_class_v1",
+                        "technique": "GAN"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "shanghaitech",
+        "resolution": {
+            "width": 856,
+            "height": 480
+        },
+        "videos": [
+            {
+                "name": "01_0014",
+                "size": 265
+            },
+            {
+                "name": "02_0128",
+                "size": 457
+            },
+            {
+                "name": "03_0031",
+                "size": 529
+            }
+        ],
+        "structures": [
+            {
+                "name": "ds_50_v2",
+                "mod": "RetinaNet",
+                "mct": 50
+            }
+        ],
+        "models": [
+            {
+                "name": "method_v1_shanghaitech_ds_50_fg_10_v2",
+                "classifiers": [
+                    {
+                        "name": "method_v1_shanghaitech_ds_50_fg_10_v2_0_class_v1",
+                        "technique": "GAN"
+                    }
+                ]
+            }
+        ]
+    }
+]
