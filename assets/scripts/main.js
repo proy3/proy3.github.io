@@ -336,6 +336,10 @@
     // Start the video
     /***** Load data *****/
     d3.json("./data/" + currentData.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + currentVideo.name + "/" + "region_scores.json").then(function (data) {
+      // Interrupt any transition
+      videoPlayerGroup.selectAll("image").interrupt();
+      // Clear any existing
+      videoPlayerGroup.selectAll("image").remove();
       // Replace image with transition duration
       videoPlayerGroup.selectAll("image")
         .data(data.filter(d => d.frame_number >= d3.select("#frame-count").text()))
