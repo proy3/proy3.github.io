@@ -24,10 +24,10 @@
         ],
         "models": [
             {
-                "name": "method_v1_ped1_ds_50_fg_1_v2",
+                "name": "method_v1",
                 "classifiers": [
                     {
-                        "name": "method_v1_ped1_ds_50_fg_1_v2_0_class_v1",
+                        "name": "method_v1_0_class_v1",
                         "technique": "GAN"
                     }
                 ]
@@ -71,10 +71,10 @@
         ],
         "models": [
             {
-                "name": "method_v1_ped2_ds_50_fg_1_v2",
+                "name": "method_v1",
                 "classifiers": [
                     {
-                        "name": "method_v1_ped2_ds_50_fg_1_v2_0_class_v1",
+                        "name": "method_v1_0_class_v1",
                         "technique": "GAN"
                     }
                 ]
@@ -102,10 +102,10 @@
         ],
         "models": [
             {
-                "name": "method_v1_avenue_ds_50_fg_3_v2",
+                "name": "method_v1",
                 "classifiers": [
                     {
-                        "name": "method_v1_avenue_ds_50_fg_3_v2_0_class_v1",
+                        "name": "method_v1_0_class_v1",
                         "technique": "GAN"
                     }
                 ]
@@ -141,10 +141,10 @@
         ],
         "models": [
             {
-                "name": "method_v1_shanghaitech_ds_50_fg_10_v2",
+                "name": "method_v1",
                 "classifiers": [
                     {
-                        "name": "method_v1_shanghaitech_ds_50_fg_10_v2_0_class_v1",
+                        "name": "method_v1_0_class_v1",
                         "technique": "GAN"
                     }
                 ]

@@ -16,6 +16,8 @@
     {name: "Absolute Error between score and ground-truth", abbreviation: "AE"},
     {name: "Squared Error between score and ground-truth", abbreviation: "SE"}
   ];
+  // Variable which will contain data for swarm plot
+  var globalData;
 
   var currentData, currentVideo, currentMethod, currentClassifier, currentErrorType;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
@@ -56,10 +58,10 @@
   var regionImagesHeight = 148 - regionImagesMargin.top - regionImagesMargin.bottom;
 
   var swarmPlotMargin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 20
+    top: 50,
+    right: 50,
+    bottom: 50,
+    left: 50
   };
   var swarmPlotWidth = 980 - swarmPlotMargin.left - swarmPlotMargin.right;
   var swarmPlotHeight = 700 - swarmPlotMargin.top - swarmPlotMargin.bottom;
@@ -78,7 +80,7 @@
   var barChartGroup = barChartSvg.append("g")
     .attr("transform", "translate(" + barChartMargin.left + "," + barChartMargin.top + ")");
   var barChartBarsGroup = barChartGroup.append("g");
-  var barChartAxisGroup = barChartGroup.append("g").attr("class", "axis y");
+  var barChartAxisGroup = barChartGroup.append("g").attr("class", "axis y bar");
 
   var realAppearSvg = videoPanel.select("#region-real-appear-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
@@ -144,21 +146,19 @@
     .attr("y", 0)
     .attr("height", regionImagesHeight)
     .attr("width", regionImagesWidth);
-
-  swarmPlotGroup.append("rect")
-    .attr("class", "border")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("height", swarmPlotHeight)
-    .attr("width", swarmPlotWidth);
   
   /***** Scales *****/
   var colorObjects = d3.scaleOrdinal(d3.schemeCategory10);
   var colorScore = d3.scaleLinear().range(['blue', 'red']);
   var xBarChart = d3.scaleLinear().range([0, barChartWidth]);
   var yBarChart = d3.scaleBand().range([0, barChartHeight]).padding(0.1);
+  var xSwarmPlot = d3.scaleLinear().range([0, swarmPlotWidth]);
+  var ySwarmPlot = d3.scaleBand().range([swarmPlotHeight, 0]).padding(0.1);
+  var rSwarmPlot = d3.scaleSqrt().range([0, 20]);
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
+  var xAxisSwarmPlot = d3.axisBottom(xSwarmPlot);
+  var yAxisSwarmPlot = d3.axisLeft(ySwarmPlot);
 
   // tip for regions and bars
   var tip = d3.tip()
@@ -175,6 +175,10 @@
 
   // Specify the x domain for bar chart
   xBarChart.domain([0, 1]);
+
+  // Specify the x and r domains for swarm plot
+  xSwarmPlot.domain([0, 1]);
+  rSwarmPlot.domain([0, 1]);
   
   /***** Information panel management *****/
   videoPanel.select("button")
@@ -258,6 +262,58 @@
     videoPlayerGroup.on("click", function () {
       videoPanel.classed("display", !videoPanel.classed("display"));
     });
+
+    // Collect all frame-level scores and ground-truth for swarm plot
+    globalData = [];
+    data.forEach(d => {
+      d.videos.forEach(v => {
+        d3.json("./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json").then(function (scores) {
+          // Add scores
+          scores.forEach(s => {
+            globalData.push({data: d, video: v, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt});
+          });
+        });
+      });
+    });
+
+    // Swarm plot
+    // Specify the y domain
+    ySwarmPlot.domain(data.map(d => d.name));
+
+    //Defining the force chart for the swarm plot
+    /* var swarmPlot = d3.forceChart()
+      .size([swarmPlotWidth, swarmPlotHeight])
+      .x(d => xSwarmPlot(d.frame_score))
+      .y(d => ySwarmPlot(d.data.name))
+      .r(d => rSwarmPlot(Math.abs(d.frame_score - d.frame_gt)))
+      .xGravity(2)
+      .yGravity(1/3); */
+    
+    // Axe horizontal
+    swarmPlotGroup.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + swarmPlotHeight + ")")
+      .call(xAxisSwarmPlot)
+
+    swarmPlotGroup.append("text")
+      .attr("transform", "translate(" + swarmPlotWidth + "," + (swarmPlotHeight + 25) + ")")
+      .attr("y", 8)
+      .attr("dy", ".7em")
+      .style("text-anchor", "end")
+      .text("Error");
+
+    // Axe vertical
+    swarmPlotGroup.append("g")
+      .attr("class", "y axis")
+      .call(yAxisSwarmPlot)
+      .selectAll("text")	
+        .style("text-anchor", "middle")
+        .attr("dx", "0.8em")
+        .attr("dy", "-1em")
+        .attr("transform", "rotate(-90)")
+      .selectAll(".tick line")
+      .attr("x2", swarmPlotWidth)
+      .attr("stroke-dasharray", "1, 2");
   });
 
   // Add options for error types
@@ -558,7 +614,7 @@
         .attr("x", r => xBarChart(r.score) + 3)
         .attr("y", r => yBarChart("#" + r.region_number) + yBarChart.bandwidth() / 2 + 4)
         .text(r => r.score.toFixed(2));
-      // make y axis to show bar names and replace party names by abbreviations or "Autre"
+      // make y axis to show region numbers
       barChartAxisGroup.call(yAxisBarChart);
     }
     else {

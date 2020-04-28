@@ -19,7 +19,7 @@ d3.forceChart = function() {
         shape = "circle",
         tickUpdate = function() {};
     
-    var force = d3.layout.force()
+    var force = d3.forceSimulation()
       .charge(0)
       .gravity(0);
     
