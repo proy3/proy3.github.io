@@ -10,7 +10,7 @@
   <div class="tabs">
     <ul class="header row">
       <li class="col active">Anomaly Detection Explorer</li>
-      <li class="col">Anomaly Score Explorer</li>
+      <li class="col">Anomaly Scores Overview</li>
     </ul>
     <div class="content">
       <section class="tab visible" aria-label="Anomaly Detection Explorer">
@@ -66,19 +66,11 @@
         <svg id="video-player-svg"></svg>
       </section>
 
-      <section class="tab" aria-label="Anomaly Score Explorer">
+      <section class="tab" aria-label="Anomaly Scores Overview">
         <!-- Select options -->
         <div class="row">
-          <div class="label">Dataset:</div>
-          <select class="col" name="dataset" title="Dataset" id="dataset-select"></select>
-        </div>
-        <div class="row">
-          <div class="label">Method:</div>
-          <select class="col" name="method" title="Method" id="method-select"></select>
-        </div>
-        <div class="row">
-          <div class="label">Classifier:</div>
-          <select class="col" name="classifier" title="Classifier" id="classifier-select"></select>
+          <div class="label">Error type:</div>
+          <select class="col" name="errorType" title="Error type" id="error-type"></select>
         </div>
 
         <!-- SVG showing interactive bubble plot -->

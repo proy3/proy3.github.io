@@ -11,7 +11,13 @@
     'person', 'bicycle', 'car', 'motorcycle', 'bus', 
     'train', 'truck', 'backpack', 'handbag', 'skateboard'
   ];
-  var currentData, currentVideo, currentMethod, currentClassifier;
+  // Error types for assessing the difference between the frame-level score and ground-truth
+  var errorTypes = [
+    {name: "Absolute Error between score and ground-truth", abbreviation: "AE"},
+    {name: "Squared Error between score and ground-truth", abbreviation: "SE"}
+  ];
+
+  var currentData, currentVideo, currentMethod, currentClassifier, currentErrorType;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
   var videoAlpha, videoBeta;
   var videoX, videoY;
@@ -214,24 +220,19 @@
     currentClassifier = currentMethod.classifiers[0];
 
     // Add datasets
-    d3.selectAll("#dataset-select")
+    d3.select("#dataset-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        d3.selectAll("#dataset-select").property("value", currentIndex);
-
-        currentData = data[+currentIndex];
+        currentData = data[+d3.select(this).property("value")];
         currentVideo = currentData.videos[0];
         currentMethod = currentData.models[0];
         currentClassifier = currentMethod.classifiers[0];
-
         // Clear previous options
         d3.select("#video-select").selectAll("option").remove();
-        d3.selectAll("#method-select").selectAll("option").remove();
-        d3.selectAll("#classifier-select").selectAll("option").remove();
-
+        d3.select("#method-select").selectAll("option").remove();
+        d3.select("#classifier-select").selectAll("option").remove();
         // Add options
         addOptions();
-
+        // Reset the video
         resetOperation();
       })
       .selectAll("option")
@@ -243,7 +244,7 @@
     
     // Add options
     addOptions();
-
+    // Reset the video
     resetOperation();
 
     /***** Tooltip creation *****/
@@ -258,6 +259,19 @@
       videoPanel.style("display", "block");
     });
   });
+
+  // Add options for error types
+  d3.select("#error-type")
+    .on("change", function () {
+      currentErrorType = errorTypes[+d3.select(this).property("value")];
+      // Update the swarm plot
+    })
+    .selectAll("option")
+    .data(errorTypes)
+    .enter()
+    .append("option")
+    .attr("value", (d, i) => i)
+    .text(d => d.name);
     
   /**
    * Add options to the CSS selectors.
@@ -267,7 +281,7 @@
     d3.select("#video-select")
       .on("change", function () {
         currentVideo = currentData.videos[+d3.select(this).property("value")];
-
+        // Reset the video
         resetOperation();
       })
       .selectAll("option")
@@ -278,17 +292,12 @@
       .text(d => d.name);
   
     // Add methods
-    d3.selectAll("#method-select")
+    d3.select("#method-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        currentMethod = currentData.models[+currentIndex];
-        d3.selectAll("#method-select").property("value", currentIndex);
-
+        currentMethod = currentData.models[+d3.select(this).property("value")];
         currentClassifier = currentMethod.classifiers[0];
-
         // Clear previous options
-        d3.selectAll("#classifier-select").selectAll("option").remove();
-
+        d3.select("#classifier-select").selectAll("option").remove();
         // Add classifiers
         addClassifierOptions();
       })
@@ -308,11 +317,9 @@
    */
   function addClassifierOptions() {
     // Add classifiers
-    d3.selectAll("#classifier-select")
+    d3.select("#classifier-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        currentClassifier = currentMethod.classifiers[+currentIndex];
-        d3.selectAll("#classifier-select").property("value", currentIndex);
+        currentClassifier = currentMethod.classifiers[+d3.select(this).property("value")];
       })
       .selectAll("option")
       .data(currentMethod.classifiers)
