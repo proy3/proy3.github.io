@@ -179,7 +179,7 @@
   /***** Information panel management *****/
   videoPanel.select("button")
     .on("click", function () {
-      videoPanel.style("display", "none");
+      videoPanel.classed("display", false);
     });
 
   d3.select("#stop-circles-button")
@@ -256,7 +256,7 @@
 
     // Show panel if clicked on video
     videoPlayerGroup.on("click", function () {
-      videoPanel.style("display", "block");
+      videoPanel.classed("display", !videoPanel.classed("display"));
     });
   });
 
@@ -369,7 +369,7 @@
    * Also used in selectors.
    */
   function stopOperation() {
-    videoPanel.style("display", "block");
+    videoPanel.classed("display", true);
     d3.select("#play-circles-button").classed("green", false);
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps
@@ -399,7 +399,7 @@
    * Also used in selectors.
    */
   function resetOperation() {
-    videoPanel.style("display", "none");
+    videoPanel.classed("display", false);
     d3.select("#play-circles-button").classed("green", false);
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps

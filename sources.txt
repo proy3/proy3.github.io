@@ -31,3 +31,4 @@ List of useful links:
 - https://bl.ocks.org/aaizemberg/3eb7c8c3ac87ce965768e0826ea2cb32
 - https://bl.ocks.org/HarryStevens/aa2c3313b29a4f9c819ee465888e1475
 - https://bl.ocks.org/sandravizmad/9fa1dbf097e032b344d8aa9b54adc8ed/e6286664b6d643b3954f3df6478d7395a0ade377
+- https://stackoverflow.com/questions/22584060/d3js-how-to-toggle-css-class-after-clicking-on-anelement
