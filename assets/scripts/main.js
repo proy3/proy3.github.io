@@ -306,14 +306,15 @@
     swarmPlotGroup.append("g")
       .attr("class", "y axis")
       .call(yAxisSwarmPlot)
-      .selectAll("text")	
+      .selectAll(".tick line")
+      .attr("x2", swarmPlotWidth)
+      .attr("stroke-dasharray", "4, 4");
+
+    swarmPlotGroup.selectAll(".y.axis text")	
         .style("text-anchor", "middle")
         .attr("dx", "0.8em")
         .attr("dy", "-1em")
-        .attr("transform", "rotate(-90)")
-      .selectAll(".tick line")
-      .attr("x2", swarmPlotWidth)
-      .attr("stroke-dasharray", "1, 2");
+        .attr("transform", "rotate(-90)");
   });
 
   // Add options for error types
