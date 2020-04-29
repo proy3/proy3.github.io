@@ -152,7 +152,7 @@
   var yBarChart = d3.scaleBand().range([0, barChartHeight]).padding(0.1);
   var xSwarmPlot = d3.scaleLinear().range([0, swarmPlotWidth]);
   var ySwarmPlot = d3.scaleBand().range([swarmPlotHeight, 0]).padding(0.1);
-  var rSwarmPlot = d3.scaleSqrt().range([0, 10]);
+  var rSwarmPlot = d3.scaleSqrt().range([3, 5]);
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
   var xAxisSwarmPlot = d3.axisBottom(xSwarmPlot);
@@ -174,9 +174,8 @@
   // Specify the x domain for bar chart
   xBarChart.domain([0, 1]);
 
-  // Specify the x and r domains for swarm plot
+  // Specify the x domain for swarm plot
   xSwarmPlot.domain([0, 1]);
-  rSwarmPlot.domain([0, 1]);
   
   /***** Information panel management *****/
   videoPanel.select("button")
@@ -301,40 +300,31 @@
       })));
 
       // take top 200 scores with biggest errors
-      globalData = globalData.sort((x, y) => d3.descending(x.error, y.error)).slice(0, 200);
+      var numberOfNodes = 200;
+      globalData = globalData.sort((x, y) => d3.descending(x.error, y.error)).slice(0, numberOfNodes);
+
+      // Specify the r domain
+      rSwarmPlot.domain([d3.min(globalData.map(d => d.error)), d3.max(globalData.map(d => d.error))]);
 
       // Map the basic node data to d3-friendly format.
       var nodes = globalData.map(function(node) {
         return {
-          radius: rSwarmPlot(node.error),
           fillColor: colorScore(node.frame_score),
           strokeColor: node.frame_gt == 1 ? 'red' : 'blue',
           x: xSwarmPlot(node.frame_score),
-          y: ySwarmPlot(node.dataset.name) + 66
+          y: ySwarmPlot(node.dataset.name) + 66,
+          radius: rSwarmPlot(node.error)
         };
       });
 
       //Defining the force simulation
-      var force = d3.forceSimulation(nodes)
-        .force('charge', d3.forceManyBody())
-        .force('center', d3.forceCenter(swarmPlotWidth / 2, swarmPlotHeight / 2 - 80))
-        .force('forceX', d3.forceX(d => d.x))
-        .force('forceY', d3.forceY(d => d.y))
-        .force('collide', d3.forceCollide(d => d.radius))
-        .on("tick", tick)
+      var simulation = d3.forceSimulation(nodes)
+        .force('x', d3.forceX(d => d.x).strength(4))
+        .force('y', d3.forceY(d => d.y))
+        .force('collide', d3.forceCollide(d => d.radius + 1))
         .stop();
       
-      function tick() {
-        for ( i = 0; i < nodes.length; i++ ) {
-          var node = nodes[i];
-          node.cx = node.x;
-          node.cy = node.y;
-        }
-      }
-
-      // Run the layout a fixed number of times.
-      force.tick(120);
-      force.stop();
+      for (var i = 0; i < 120; ++i) simulation.tick();
 
       //Draw bubbles
       swarmPlotGroup.selectAll("circle")
