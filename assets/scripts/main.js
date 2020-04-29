@@ -281,13 +281,13 @@
     ySwarmPlot.domain(data.map(d => d.name));
 
     //Defining the force chart for the swarm plot
-    /* var swarmPlot = d3.forceChart()
-      .size([swarmPlotWidth, swarmPlotHeight])
-      .x(d => xSwarmPlot(d.frame_score))
-      .y(d => ySwarmPlot(d.data.name))
-      .r(d => rSwarmPlot(Math.abs(d.frame_score - d.frame_gt)))
-      .xGravity(2)
-      .yGravity(1/3); */
+    var simulation = d3.forceSimulation(globalData)
+      .force("x", d3.forceX(d => xSwarmPlot(Math.abs(d.frame_score - d.frame_gt))).strength(5))
+      .force("y", d3.forceY(d => ySwarmPlot(d.data.name)))
+      .force("collide", d3.forceCollide(4))
+      .stop();
+
+    for (var i = 0; i < 120; ++i) simulation.tick();
     
     // Axe horizontal
     swarmPlotGroup.append("g")
@@ -311,10 +311,25 @@
       .attr("stroke-dasharray", "4, 4");
 
     swarmPlotGroup.selectAll(".y.axis text")	
-        .style("text-anchor", "middle")
-        .attr("dx", "0.8em")
-        .attr("dy", "-1em")
-        .attr("transform", "rotate(-90)");
+      .style("text-anchor", "middle")
+      .attr("dx", "0.8em")
+      .attr("dy", "-1em")
+      .attr("transform", "rotate(-90)");
+    
+    //Draw bubbles
+    swarmPlotGroup.selectAll("circle")
+      .data(d3.voronoi()
+      .extent([[-swarmPlotMargin.left, -swarmPlotMargin.top], [swarmPlotWidth + swarmPlotMargin.right, swarmPlotHeight + swarmPlotMargin.top]])
+      .x(function(d) { return d.x; })
+      .y(function(d) { return d.y; })
+      .polygons(globalData))
+      .enter()
+      .append("circle")
+      .attr("r", d => rSwarmPlot(d.frame_score))
+      .attr("cx", d => xSwarmPlot(Math.abs(d.frame_score - d.frame_gt)))
+      .attr("cy", d => ySwarmPlot(d.data.name))
+      .attr("fill", d => colorScore(d.frame_score))
+      .attr("stroke", d => d.frame_gt == 1 ? 'red' : "blue");
   });
 
   // Add options for error types

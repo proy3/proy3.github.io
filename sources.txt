@@ -32,3 +32,7 @@ List of useful links:
 - https://bl.ocks.org/HarryStevens/aa2c3313b29a4f9c819ee465888e1475
 - https://bl.ocks.org/sandravizmad/9fa1dbf097e032b344d8aa9b54adc8ed/e6286664b6d643b3954f3df6478d7395a0ade377
 - https://stackoverflow.com/questions/22584060/d3js-how-to-toggle-css-class-after-clicking-on-anelement
+- https://stackoverflow.com/questions/55940885/whats-the-equivalent-to-force-start-in-d3-v5
+- https://github.com/d3/d3-force
+- https://blockbuilder.org/mbostock/6526445e2b44303eebf21da3b6627320
+- https://bl.ocks.org/domhorvath/90fd3b59070ec2b196ba05fc56ea0eab
