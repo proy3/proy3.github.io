@@ -13,11 +13,9 @@
   ];
   // Error types for assessing the difference between the frame-level score and ground-truth
   var errorTypes = [
-    {name: "Absolute Error between score and ground-truth", abbreviation: "AE"},
-    {name: "Squared Error between score and ground-truth", abbreviation: "SE"}
+    {name: "Absolute difference between score and ground-truth", abbreviation: "AE"},
+    {name: "Squared difference between score and ground-truth", abbreviation: "SE"}
   ];
-  // Variable which will contain data for swarm plot
-  var globalData;
 
   var currentData, currentVideo, currentMethod, currentClassifier, currentErrorType;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
@@ -263,31 +261,18 @@
       videoPanel.classed("display", !videoPanel.classed("display"));
     });
 
-    // Collect all frame-level scores and ground-truth for swarm plot
-    globalData = [];
-    data.forEach(d => {
-      d.videos.forEach(v => {
-        d3.json("./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json").then(function (scores) {
-          // Add scores
-          scores.forEach(s => {
-            globalData.push({data: d, video: v, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt});
-          });
-        });
-      });
-    });
-
     // Swarm plot
     // Specify the y domain
     ySwarmPlot.domain(data.map(d => d.name));
 
     //Defining the force chart for the swarm plot
-    var simulation = d3.forceSimulation(globalData)
+    /* var simulation = d3.forceSimulation(globalData)
       .force("x", d3.forceX(d => xSwarmPlot(Math.abs(d.frame_score - d.frame_gt))).strength(5))
       .force("y", d3.forceY(d => ySwarmPlot(d.data.name)))
       .force("collide", d3.forceCollide(4))
       .stop();
 
-    for (var i = 0; i < 120; ++i) simulation.tick();
+    for (var i = 0; i < 120; ++i) simulation.tick(); */
     
     // Axe horizontal
     swarmPlotGroup.append("g")
@@ -316,20 +301,35 @@
       .attr("dy", "-1em")
       .attr("transform", "rotate(-90)");
     
-    //Draw bubbles
-    swarmPlotGroup.selectAll("circle")
-      .data(d3.voronoi()
-      .extent([[-swarmPlotMargin.left, -swarmPlotMargin.top], [swarmPlotWidth + swarmPlotMargin.right, swarmPlotHeight + swarmPlotMargin.top]])
-      .x(function(d) { return d.x; })
-      .y(function(d) { return d.y; })
-      .polygons(globalData))
-      .enter()
-      .append("circle")
-      .attr("r", d => rSwarmPlot(d.frame_score))
-      .attr("cx", d => xSwarmPlot(Math.abs(d.frame_score - d.frame_gt)))
-      .attr("cy", d => ySwarmPlot(d.data.name))
-      .attr("fill", d => colorScore(d.frame_score))
-      .attr("stroke", d => d.frame_gt == 1 ? 'red' : "blue");
+    var scoresFiles = d3.merge(data.map(d => d.videos.map(v => { return {dataset: d, video: v, path: "./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json"}; })));
+
+    // Load all scores
+    Promise.all(scoresFiles.map(f => d3.json(f.path))).then(function (results) {
+      var globalData = d3.merge(results.map((scores, i) => scores.map(s => {
+        return {dataset: scoresFiles[i].dataset, video: scoresFiles[i].video, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt};
+      })));
+      console.log('globalData: ', globalData);
+
+      //Draw bubbles
+      /* var cell = swarmPlotGroup.selectAll("circle")
+        .data(d3.voronoi()
+        .extent([[-swarmPlotMargin.left, -swarmPlotMargin.top], [swarmPlotWidth + swarmPlotMargin.right, swarmPlotHeight + swarmPlotMargin.top]])
+        .x(function(d) { return d.x; })
+        .y(function(d) { return d.y; })
+        .polygons(globalData))
+        .enter();
+      
+      cell.append("circle")
+        .attr("r", 3)
+        .attr("cx", d => d.globalData.x)
+        .attr("cy", d => d.globalData.y);
+      
+      cell.append("path")
+        .attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+      
+      cell.append("title")
+        .text(function(d) { return d.globalData.data.name; }); */
+    });
   });
 
   // Add options for error types
