@@ -152,7 +152,7 @@
   var yBarChart = d3.scaleBand().range([0, barChartHeight]).padding(0.1);
   var xSwarmPlot = d3.scaleLinear().range([0, swarmPlotWidth]);
   var ySwarmPlot = d3.scaleBand().range([swarmPlotHeight, 0]).padding(0.1);
-  var rSwarmPlot = d3.scaleSqrt().range([0, 20]);
+  var rSwarmPlot = d3.scaleSqrt().range([0, 10]);
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
   var xAxisSwarmPlot = d3.axisBottom(xSwarmPlot);
@@ -264,15 +264,6 @@
     // Swarm plot
     // Specify the y domain
     ySwarmPlot.domain(data.map(d => d.name));
-
-    //Defining the force chart for the swarm plot
-    /* var simulation = d3.forceSimulation(globalData)
-      .force("x", d3.forceX(d => xSwarmPlot(Math.abs(d.frame_score - d.frame_gt))).strength(5))
-      .force("y", d3.forceY(d => ySwarmPlot(d.data.name)))
-      .force("collide", d3.forceCollide(4))
-      .stop();
-
-    for (var i = 0; i < 120; ++i) simulation.tick(); */
     
     // Axe horizontal
     swarmPlotGroup.append("g")
@@ -285,7 +276,7 @@
       .attr("y", 8)
       .attr("dy", ".7em")
       .style("text-anchor", "end")
-      .text("Error");
+      .text("Score");
 
     // Axe vertical
     swarmPlotGroup.append("g")
@@ -306,29 +297,55 @@
     // Load all scores
     Promise.all(scoresFiles.map(f => d3.json(f.path))).then(function (results) {
       var globalData = d3.merge(results.map((scores, i) => scores.map(s => {
-        return {dataset: scoresFiles[i].dataset, video: scoresFiles[i].video, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt};
+        return {dataset: scoresFiles[i].dataset, video: scoresFiles[i].video, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt, error: Math.abs(s.frame_score - s.frame_gt)};
       })));
-      console.log('globalData: ', globalData);
+
+      // take top 200 scores with biggest errors
+      globalData = globalData.sort((x, y) => d3.descending(x.error, y.error)).slice(0, 200);
+
+      // Map the basic node data to d3-friendly format.
+      var nodes = globalData.map(function(node) {
+        return {
+          radius: rSwarmPlot(node.error),
+          fillColor: colorScore(node.frame_score),
+          strokeColor: node.frame_gt == 1 ? 'red' : 'blue',
+          x: xSwarmPlot(node.frame_score),
+          y: ySwarmPlot(node.dataset.name) + 66
+        };
+      });
+
+      //Defining the force simulation
+      var force = d3.forceSimulation(nodes)
+        .force('charge', d3.forceManyBody())
+        .force('center', d3.forceCenter(swarmPlotWidth / 2, swarmPlotHeight / 2 - 80))
+        .force('forceX', d3.forceX(d => d.x))
+        .force('forceY', d3.forceY(d => d.y))
+        .force('collide', d3.forceCollide(d => d.radius))
+        .on("tick", tick)
+        .stop();
+      
+      function tick() {
+        for ( i = 0; i < nodes.length; i++ ) {
+          var node = nodes[i];
+          node.cx = node.x;
+          node.cy = node.y;
+        }
+      }
+
+      // Run the layout a fixed number of times.
+      force.tick(120);
+      force.stop();
 
       //Draw bubbles
-      /* var cell = swarmPlotGroup.selectAll("circle")
-        .data(d3.voronoi()
-        .extent([[-swarmPlotMargin.left, -swarmPlotMargin.top], [swarmPlotWidth + swarmPlotMargin.right, swarmPlotHeight + swarmPlotMargin.top]])
-        .x(function(d) { return d.x; })
-        .y(function(d) { return d.y; })
-        .polygons(globalData))
-        .enter();
-      
-      cell.append("circle")
-        .attr("r", 3)
-        .attr("cx", d => d.globalData.x)
-        .attr("cy", d => d.globalData.y);
-      
-      cell.append("path")
-        .attr("d", function(d) { return "M" + d.join("L") + "Z"; });
-      
-      cell.append("title")
-        .text(function(d) { return d.globalData.data.name; }); */
+      swarmPlotGroup.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", d => d.radius)
+        .attr("fill", d => d.fillColor)
+        .attr("stroke", d => d.strokeColor);
     });
   });
 

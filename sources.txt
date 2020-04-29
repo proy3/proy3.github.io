@@ -38,3 +38,5 @@ List of useful links:
 - https://bl.ocks.org/domhorvath/90fd3b59070ec2b196ba05fc56ea0eab
 - https://stackoverflow.com/questions/49534470/d3-js-v5-promise-all-replaced-d3-queue
 - http://datawanderings.com/2018/08/15/d3-js-v5-promise-syntax-examples/
+- https://stackoverflow.com/questions/57591529/how-to-create-a-beeswarm-plot-with-variable-radius-in-d3js-v5
+- https://blockbuilder.org/hydrosquall/983d19b42a62fd1651c2942fe6cfcfbe

@@ -320,15 +320,6 @@ circle.hide {
   pointer-events: none;
 }
 
-.cells path {
-  fill: none;
-  pointer-events: all;
-}
-
-.cells :hover circle {
-  fill: red;
-}
-
 /***** Tooltip *****/
 .d3-tip {
   line-height: 1;
