@@ -11,13 +11,8 @@
     'person', 'bicycle', 'car', 'motorcycle', 'bus', 
     'train', 'truck', 'backpack', 'handbag', 'skateboard'
   ];
-  // Error types for assessing the difference between the frame-level score and ground-truth
-  var errorTypes = [
-    {name: "Absolute difference between score and ground-truth", abbreviation: "AE"},
-    {name: "Squared difference between score and ground-truth", abbreviation: "SE"}
-  ];
 
-  var currentData, currentVideo, currentMethod, currentClassifier, currentErrorType;
+  var currentData, currentVideo, currentMethod, currentClassifier;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
   var videoAlpha, videoBeta;
   var videoX, videoY;
@@ -62,7 +57,7 @@
     left: 50
   };
   var swarmPlotWidth = 980 - swarmPlotMargin.left - swarmPlotMargin.right;
-  var swarmPlotHeight = 700 - swarmPlotMargin.top - swarmPlotMargin.bottom;
+  var swarmPlotHeight = 1500 - swarmPlotMargin.top - swarmPlotMargin.bottom;
 
   /***** Create SVG elements *****/
   var videoPlayerSvg = d3.select("#video-player-svg")
@@ -152,7 +147,6 @@
   var yBarChart = d3.scaleBand().range([0, barChartHeight]).padding(0.1);
   var xSwarmPlot = d3.scaleLinear().range([0, swarmPlotWidth]);
   var ySwarmPlot = d3.scaleBand().range([swarmPlotHeight, 0]).padding(0.1);
-  var rSwarmPlot = d3.scaleSqrt().range([3, 5]);
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
   var xAxisSwarmPlot = d3.axisBottom(xSwarmPlot);
@@ -275,7 +269,7 @@
       .attr("y", 8)
       .attr("dy", ".7em")
       .style("text-anchor", "end")
-      .text("Score");
+      .text("Error");
 
     // Axe vertical
     swarmPlotGroup.append("g")
@@ -299,32 +293,24 @@
         return {dataset: scoresFiles[i].dataset, video: scoresFiles[i].video, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt, error: Math.abs(s.frame_score - s.frame_gt)};
       })));
 
-      // take top 200 scores with biggest errors
-      var numberOfNodes = 200;
-      globalData = globalData.sort((x, y) => d3.descending(x.error, y.error)).slice(0, numberOfNodes);
-
-      // Specify the r domain
-      rSwarmPlot.domain([d3.min(globalData.map(d => d.error)), d3.max(globalData.map(d => d.error))]);
-
       // Map the basic node data to d3-friendly format.
       var nodes = globalData.map(function(node) {
         return {
           fillColor: colorScore(node.frame_score),
           strokeColor: node.frame_gt == 1 ? 'red' : 'blue',
-          x: xSwarmPlot(node.frame_score),
-          y: ySwarmPlot(node.dataset.name) + 66,
-          radius: rSwarmPlot(node.error)
+          x: xSwarmPlot(node.error),
+          y: ySwarmPlot(node.dataset.name) + 150
         };
       });
 
       //Defining the force simulation
       var simulation = d3.forceSimulation(nodes)
-        .force('x', d3.forceX(d => d.x).strength(4))
+        .force('x', d3.forceX(d => d.x).strength(5))
         .force('y', d3.forceY(d => d.y))
-        .force('collide', d3.forceCollide(d => d.radius + 1))
+        .force('collide', d3.forceCollide(4))
         .stop();
       
-      for (var i = 0; i < 120; ++i) simulation.tick();
+      for (var i = 0; i < 500; ++i) simulation.tick();
 
       //Draw bubbles
       swarmPlotGroup.selectAll("circle")
@@ -333,24 +319,11 @@
         .append("circle")
         .attr("cx", d => d.x)
         .attr("cy", d => d.y)
-        .attr("r", d => d.radius)
+        .attr("r", 3)
         .attr("fill", d => d.fillColor)
         .attr("stroke", d => d.strokeColor);
     });
   });
-
-  // Add options for error types
-  d3.select("#error-type")
-    .on("change", function () {
-      currentErrorType = errorTypes[+d3.select(this).property("value")];
-      // Update the swarm plot
-    })
-    .selectAll("option")
-    .data(errorTypes)
-    .enter()
-    .append("option")
-    .attr("value", (d, i) => i)
-    .text(d => d.name);
     
   /**
    * Add options to the CSS selectors.
