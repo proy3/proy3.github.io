@@ -158,6 +158,10 @@ p {
   background-color: rgba(255, 255, 255, 0.9);
 }
 
+#panel.display {
+  display: block;
+}
+
 #panel button {
   width: 25px;
   height: 25px;
@@ -276,10 +280,11 @@ rect.region.hide {
   shape-rendering: crispEdges
 }
 
-.axis line {
+.axis.bar line {
   display: none;
 }
 
+.axis line,
 .axis path {
   fill: none;
   stroke: black;
@@ -297,22 +302,31 @@ rect.region.hide {
   fill: #fff;
 }
 
-#circle circle {
-  fill: none;
-  pointer-events: all;
+circle {
+  fill-opacity: 0.5;
 }
 
-.chord {
+circle:hover {
   fill-opacity: 0.8;
 }
 
-.chord:hover:not(.fade) {
-  fill-opacity: 0.95;
+circle.selected {
+  animation: flash-animation 0.5s ease-out infinite;
+  animation-direction: alternate;
 }
 
-#circle:hover .fade {
-  fill-opacity: 0.1;
-  transition: fill-opacity ease-out 0.1s;
+@keyframes flash-animation {
+  from {
+    fill-opacity: 0.8;
+  }
+  to {
+    fill-opacity: 0.1;
+  }
+}
+
+circle.hide {
+  fill-opacity: 0.15;
+  stroke-opacity: 0.5;
   pointer-events: none;
 }
 
@@ -337,4 +351,8 @@ rect.region.hide {
   content: "\25BC";
   position: absolute;
   text-align: center;
+}
+
+.axis .tick text {
+  font-size: 10pt;
 }

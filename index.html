@@ -10,7 +10,7 @@
   <div class="tabs">
     <ul class="header row">
       <li class="col active">Anomaly Detection Explorer</li>
-      <li class="col">Anomaly Score Explorer</li>
+      <li class="col">Incorrect Scores Explorer</li>
     </ul>
     <div class="content">
       <section class="tab visible" aria-label="Anomaly Detection Explorer">
@@ -66,21 +66,7 @@
         <svg id="video-player-svg"></svg>
       </section>
 
-      <section class="tab" aria-label="Anomaly Score Explorer">
-        <!-- Select options -->
-        <div class="row">
-          <div class="label">Dataset:</div>
-          <select class="col" name="dataset" title="Dataset" id="dataset-select"></select>
-        </div>
-        <div class="row">
-          <div class="label">Method:</div>
-          <select class="col" name="method" title="Method" id="method-select"></select>
-        </div>
-        <div class="row">
-          <div class="label">Classifier:</div>
-          <select class="col" name="classifier" title="Classifier" id="classifier-select"></select>
-        </div>
-
+      <section class="tab" aria-label="Incorrect Scores Explorer">
         <!-- SVG showing interactive bubble plot -->
         <svg id="swarm-plot-svg"></svg>
       </section>
@@ -91,6 +77,5 @@
   <script type="text/javascript" src="assets/libs/d3-tip.js"></script>
 
   <script type="text/javascript" src="assets/scripts/main.js"></script>
-  <script type="text/javascript" src="assets/scripts/force-chart.js"></script>
 </body>
 </html>

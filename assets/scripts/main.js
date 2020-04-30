@@ -11,6 +11,7 @@
     'person', 'bicycle', 'car', 'motorcycle', 'bus', 
     'train', 'truck', 'backpack', 'handbag', 'skateboard'
   ];
+
   var currentData, currentVideo, currentMethod, currentClassifier;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
   var videoAlpha, videoBeta;
@@ -50,13 +51,13 @@
   var regionImagesHeight = 148 - regionImagesMargin.top - regionImagesMargin.bottom;
 
   var swarmPlotMargin = {
-    top: 20,
-    right: 20,
-    bottom: 20,
-    left: 20
+    top: 50,
+    right: 50,
+    bottom: 50,
+    left: 50
   };
   var swarmPlotWidth = 980 - swarmPlotMargin.left - swarmPlotMargin.right;
-  var swarmPlotHeight = 700 - swarmPlotMargin.top - swarmPlotMargin.bottom;
+  var swarmPlotHeight = 1500 - swarmPlotMargin.top - swarmPlotMargin.bottom;
 
   /***** Create SVG elements *****/
   var videoPlayerSvg = d3.select("#video-player-svg")
@@ -72,7 +73,7 @@
   var barChartGroup = barChartSvg.append("g")
     .attr("transform", "translate(" + barChartMargin.left + "," + barChartMargin.top + ")");
   var barChartBarsGroup = barChartGroup.append("g");
-  var barChartAxisGroup = barChartGroup.append("g").attr("class", "axis y");
+  var barChartAxisGroup = barChartGroup.append("g").attr("class", "axis y bar");
 
   var realAppearSvg = videoPanel.select("#region-real-appear-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
@@ -151,8 +152,12 @@
   var colorScore = d3.scaleLinear().range(['blue', 'red']);
   var xBarChart = d3.scaleLinear().range([0, barChartWidth]);
   var yBarChart = d3.scaleBand().range([0, barChartHeight]).padding(0.1);
+  var xSwarmPlot = d3.scaleLinear().range([0, swarmPlotWidth]);
+  var ySwarmPlot = d3.scaleBand().range([swarmPlotHeight, 0]).padding(0.1);
 
   var yAxisBarChart = d3.axisLeft(yBarChart);
+  var xAxisSwarmPlot = d3.axisBottom(xSwarmPlot);
+  var yAxisSwarmPlot = d3.axisLeft(ySwarmPlot);
 
   // tip for regions and bars
   var tip = d3.tip()
@@ -162,6 +167,13 @@
   var tipFrame = d3.tip()
     .attr('class', 'd3-tip')
     .offset([-10, -200]);
+  // tip for swarm plot
+  var tipSwarm = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0]);
+  var tipSwarmSelect = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0]);
 
   // Specify the color domain
   colorObjects.domain(objectTypes);
@@ -169,11 +181,14 @@
 
   // Specify the x domain for bar chart
   xBarChart.domain([0, 1]);
+
+  // Specify the x domain for swarm plot
+  xSwarmPlot.domain([0, 1]);
   
   /***** Information panel management *****/
   videoPanel.select("button")
     .on("click", function () {
-      videoPanel.style("display", "none");
+      videoPanel.classed("display", false);
     });
 
   d3.select("#stop-circles-button")
@@ -196,7 +211,8 @@
   tabs.on("click", function (d, i) {
     var self = this;
     var index = i;
-    resetOperation();
+    stopOperation();
+    resetSelectedSwarmCell();
     tabs.classed("active", function () {
       return self === this;
     });
@@ -214,24 +230,19 @@
     currentClassifier = currentMethod.classifiers[0];
 
     // Add datasets
-    d3.selectAll("#dataset-select")
+    d3.select("#dataset-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        d3.selectAll("#dataset-select").property("value", currentIndex);
-
-        currentData = data[+currentIndex];
+        currentData = data[+d3.select(this).property("value")];
         currentVideo = currentData.videos[0];
         currentMethod = currentData.models[0];
         currentClassifier = currentMethod.classifiers[0];
-
         // Clear previous options
         d3.select("#video-select").selectAll("option").remove();
-        d3.selectAll("#method-select").selectAll("option").remove();
-        d3.selectAll("#classifier-select").selectAll("option").remove();
-
+        d3.select("#method-select").selectAll("option").remove();
+        d3.select("#classifier-select").selectAll("option").remove();
         // Add options
         addOptions();
-
+        // Reset the video
         resetOperation();
       })
       .selectAll("option")
@@ -243,7 +254,7 @@
     
     // Add options
     addOptions();
-
+    // Reset the video
     resetOperation();
 
     /***** Tooltip creation *****/
@@ -252,10 +263,131 @@
     barChartBarsGroup.call(tip);
     tipFrame.html(d => getFrameToolTipText.call(this, d));
     videoPlayerGroup.call(tipFrame);
+    tipSwarm.html(d => getSwarmToolTipText.call(this, d));
+    swarmPlotGroup.call(tipSwarm);
+    tipSwarmSelect.html(d => getSwarmToolTipText.call(this, d));
+    swarmPlotGroup.call(tipSwarmSelect);
 
     // Show panel if clicked on video
     videoPlayerGroup.on("click", function () {
-      videoPanel.style("display", "block");
+      videoPanel.classed("display", !videoPanel.classed("display"));
+    });
+
+    // Reset selection if clicked outside swarm cells
+    swarmPlotSvg.on("click", resetSelectedSwarmCell);
+
+    // Swarm plot
+    // Specify the y domain
+    ySwarmPlot.domain(data.map(d => d.name));
+    
+    // Axe horizontal
+    swarmPlotGroup.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + swarmPlotHeight + ")")
+      .call(xAxisSwarmPlot)
+
+    swarmPlotGroup.append("text")
+      .attr("transform", "translate(" + swarmPlotWidth + "," + (swarmPlotHeight + 25) + ")")
+      .attr("y", 8)
+      .attr("dy", ".7em")
+      .style("text-anchor", "end")
+      .text("Error");
+
+    // Axe vertical
+    swarmPlotGroup.append("g")
+      .attr("class", "y axis")
+      .call(yAxisSwarmPlot)
+      .selectAll(".tick line")
+      .attr("x2", swarmPlotWidth)
+      .attr("stroke-dasharray", "4, 4");
+
+    swarmPlotGroup.selectAll(".y.axis text")	
+      .style("text-anchor", "middle")
+      .attr("dx", "0.8em")
+      .attr("dy", "-1em")
+      .attr("transform", "rotate(-90)");
+    
+    var scoresFiles = d3.merge(data.map((d, i) => d.videos.map((v, j) => { return {dataset: {d: d, i: i}, video: {v: v, i: j}, path: "./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json"}; })));
+
+    // Load all scores
+    Promise.all(scoresFiles.map(f => d3.json(f.path))).then(function (results) {
+      // Collect all scores and map the basic node data to d3-friendly format.
+      var nodes = d3.merge(results.map((scores, i) => scores.map(s => {
+        var scoresFile = scoresFiles[i];
+        var scoreError = Math.abs(s.frame_score - s.frame_gt);
+        return {
+          dataset: scoresFile.dataset, 
+          video: scoresFile.video, 
+          frame_number: s.frame_number, 
+          frame_score: s.frame_score, 
+          frame_gt: s.frame_gt, 
+          error: scoreError, 
+          x: xSwarmPlot(scoreError), 
+          y: ySwarmPlot(scoresFile.dataset.d.name) + 150,
+          fillColor: colorScore(s.frame_score),
+          strokeColor: s.frame_gt == 1 ? 'red' : 'blue'
+        };
+      })));
+
+      //Defining the force simulation
+      var simulation = d3.forceSimulation(nodes)
+        .force('x', d3.forceX(d => d.x).strength(5))
+        .force('y', d3.forceY(d => d.y))
+        .force('collide', d3.forceCollide(4))
+        .stop();
+      
+      for (var i = 0; i < 500; ++i) simulation.tick();
+
+      //Draw bubbles
+      swarmPlotGroup.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", 3)
+        .attr("fill", d => d.fillColor)
+        .attr("stroke", d => d.strokeColor)
+        .on("mouseover", tipSwarm.show)
+        .on("mouseout", tipSwarm.hide)
+        .on('click', function(d) {
+          // Don't propagate to parent svg
+          d3.event.stopPropagation();
+          // Consecutive click will unselect
+          var priorSelection = d3.select(this).classed("selected");
+          // Unselect any selected cells 
+          swarmPlotGroup.selectAll("circle").classed("selected", false);
+          // Hide cells 
+          swarmPlotGroup.selectAll("circle").classed("hide", !priorSelection);
+          // Select the corresponding cell
+          d3.select(this).classed("selected", !priorSelection);
+          d3.select(this).classed("hide", false);
+          // Update the current data, video and frame number
+          currentData = d.dataset.d;
+          currentVideo = d.video.v;
+          d3.select("#frame-count").text(d.frame_number);
+          // Update the video resolution
+          updateVideoConfiguration();
+          // Update the selectors
+          d3.select("#dataset-select").property("value", d.dataset.i);
+          d3.select("#video-select").selectAll("option").remove();
+          // Add videos
+          d3.select("#video-select")
+            .on("change", function () {
+              currentVideo = currentData.videos[+d3.select(this).property("value")];
+              // Reset the video
+              resetOperation();
+            })
+            .selectAll("option")
+            .data(currentData.videos)
+            .enter()
+            .append("option")
+            .attr("value", (_, i) => i)
+            .text(o => o.name);
+          d3.select("#video-select").property("value", d.video.i);
+          // Show the tooltip
+          return !priorSelection ? tipSwarmSelect.show(d) : tipSwarmSelect.hide(d);
+        });
     });
   });
     
@@ -267,7 +399,7 @@
     d3.select("#video-select")
       .on("change", function () {
         currentVideo = currentData.videos[+d3.select(this).property("value")];
-
+        // Reset the video
         resetOperation();
       })
       .selectAll("option")
@@ -278,17 +410,12 @@
       .text(d => d.name);
   
     // Add methods
-    d3.selectAll("#method-select")
+    d3.select("#method-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        currentMethod = currentData.models[+currentIndex];
-        d3.selectAll("#method-select").property("value", currentIndex);
-
+        currentMethod = currentData.models[+d3.select(this).property("value")];
         currentClassifier = currentMethod.classifiers[0];
-
         // Clear previous options
-        d3.selectAll("#classifier-select").selectAll("option").remove();
-
+        d3.select("#classifier-select").selectAll("option").remove();
         // Add classifiers
         addClassifierOptions();
       })
@@ -308,11 +435,9 @@
    */
   function addClassifierOptions() {
     // Add classifiers
-    d3.selectAll("#classifier-select")
+    d3.select("#classifier-select")
       .on("change", function () {
-        var currentIndex = d3.select(this).property("value");
-        currentClassifier = currentMethod.classifiers[+currentIndex];
-        d3.selectAll("#classifier-select").property("value", currentIndex);
+        currentClassifier = currentMethod.classifiers[+d3.select(this).property("value")];
       })
       .selectAll("option")
       .data(currentMethod.classifiers)
@@ -362,29 +487,13 @@
    * Also used in selectors.
    */
   function stopOperation() {
-    videoPanel.style("display", "block");
+    videoPanel.classed("display", true);
     d3.select("#play-circles-button").classed("green", false);
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps
     d3.select("input").property("disabled", false);
-    // Open the region scores json file and read the frames and region images
-    d3.json("./data/" + currentData.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + currentVideo.name + "/" + "region_scores.json").then(function (data) {
-      // Interrupt any transition
-      videoPlayerGroup.selectAll("image").interrupt();
-      // Clear any existing
-      videoPlayerGroup.selectAll("image").remove();
-      // Put image
-      videoPlayerGroup.selectAll("image")
-        .data(data.filter(d => d.frame_number == d3.select("#frame-count").text()))
-        .enter()
-        .append("svg:image")
-        .attr("x", videoImagePosX)
-        .attr("y", videoImagePosY)
-        .attr("height", videoImageHeight)
-        .attr("width", videoImageWidth)
-        .attr("xlink:href", d => "./data/" + currentData.name + "/frames/" + currentVideo.name + "/" + d.frame_filename)
-        .each(updateVideoRelatedStuff);
-    });
+    // Update the image
+    updateVideoFrame(d3.select("#frame-count").text());
   }
 
   /**
@@ -392,12 +501,21 @@
    * Also used in selectors.
    */
   function resetOperation() {
-    videoPanel.style("display", "none");
+    videoPanel.classed("display", false);
     d3.select("#play-circles-button").classed("green", false);
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps
     d3.select("input").property("disabled", false);
+    // Reset the video settings
+    updateVideoConfiguration();
     // Pause the video and reset the frame-count to 1
+    updateVideoFrame();
+  }
+
+  /**
+   * Update video configuration.
+   */
+  function updateVideoConfiguration () {
     videoAlpha = currentData.resolution.width / currentData.resolution.height;
     if (videoAlpha < videoBeta) {
       var correctWidth = videoPlayerHeight * videoAlpha;
@@ -419,6 +537,12 @@
     // Reset the video domains
     videoX.domain([0, currentData.resolution.width]);
     videoY.domain([0, currentData.resolution.height]);
+  }
+
+  /**
+   * Update video frame.
+   */
+  function updateVideoFrame (frame_number = 1) {
     // Open the region scores json file and read the frames and region images
     d3.json("./data/" + currentData.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + currentVideo.name + "/" + "region_scores.json").then(function (data) {
       // Interrupt any transition
@@ -426,7 +550,8 @@
       // Clear any existing
       videoPlayerGroup.selectAll("image").remove();
       // Put image
-      videoPlayerGroup.selectAll("image").data([data[0]])
+      videoPlayerGroup.selectAll("image")
+        .data(data.filter(d => d.frame_number == frame_number))
         .enter()
         .append("svg:image")
         .attr("x", videoImagePosX)
@@ -551,7 +676,7 @@
         .attr("x", r => xBarChart(r.score) + 3)
         .attr("y", r => yBarChart("#" + r.region_number) + yBarChart.bandwidth() / 2 + 4)
         .text(r => r.score.toFixed(2));
-      // make y axis to show bar names and replace party names by abbreviations or "Autre"
+      // make y axis to show region numbers
       barChartAxisGroup.call(yAxisBarChart);
     }
     else {
@@ -588,6 +713,30 @@
     return "Frame number: <strong>" + f.frame_number + "</strong><br>" +
       "Frame-level score: <strong>" + f.frame_score.toFixed(3) + "</strong><br>" +
       "Ground-truth: <strong>" + f.frame_gt + " (" + (f.frame_gt === 1 ? "abnormal" : "normal") + ")";
+  }
+
+  /**
+   * Gets the text associated with the tooltip.
+   *
+   * @param s               The score cell hovered by the mouse.
+   * @return {string}       The text to display in the tooltip.
+   */
+  function getSwarmToolTipText(s) {
+    return "Dataset: <strong>" + s.dataset.d.name + "</strong><br>" +
+      "Video: <strong>" + s.video.v.name + "</strong><br>" +
+      "Frame number: <strong>" + s.frame_number + "</strong><br>" +
+      "Frame-level score: <strong>" + s.frame_score.toFixed(3) + "</strong><br>" +
+      "Ground-truth: <strong>" + s.frame_gt + " (" + (s.frame_gt === 1 ? "abnormal" : "normal") + ")" + "</strong><br>" +
+      "Absolute error: <strong>" + s.error.toFixed(3) + "</strong><br>";
+  }
+
+  /**
+   * Reset selected cell in the swarm plot.
+   */
+  function resetSelectedSwarmCell () {
+    swarmPlotGroup.selectAll("circle").classed("selected", false);
+    swarmPlotGroup.selectAll("circle").classed("hide", false);
+    tipSwarmSelect.hide();
   }
 
   /**
