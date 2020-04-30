@@ -211,7 +211,8 @@
   tabs.on("click", function (d, i) {
     var self = this;
     var index = i;
-    resetOperation();
+    stopOperation();
+    resetSelectedSwarmCell();
     tabs.classed("active", function () {
       return self === this;
     });
@@ -272,11 +273,8 @@
       videoPanel.classed("display", !videoPanel.classed("display"));
     });
 
-    swarmPlotSvg.on("click", function () {
-      swarmPlotGroup.selectAll("circle").classed("selected", false);
-      swarmPlotGroup.selectAll("circle").classed("hide", false);
-      tipSwarmSelect.hide();
-    });
+    // Reset selection if clicked outside swarm cells
+    swarmPlotSvg.on("click", resetSelectedSwarmCell);
 
     // Swarm plot
     // Specify the y domain
@@ -309,7 +307,7 @@
       .attr("dy", "-1em")
       .attr("transform", "rotate(-90)");
     
-    var scoresFiles = d3.merge(data.map(d => d.videos.map(v => { return {dataset: d, video: v, path: "./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json"}; })));
+    var scoresFiles = d3.merge(data.map((d, i) => d.videos.map((v, j) => { return {dataset: {d: d, i: i}, video: {v: v, i: j}, path: "./data/" + d.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + v.name + "/" + "region_scores.json"}; })));
 
     // Load all scores
     Promise.all(scoresFiles.map(f => d3.json(f.path))).then(function (results) {
@@ -325,7 +323,7 @@
           frame_gt: s.frame_gt, 
           error: scoreError, 
           x: xSwarmPlot(scoreError), 
-          y: ySwarmPlot(scoresFile.dataset.name) + 150,
+          y: ySwarmPlot(scoresFile.dataset.d.name) + 150,
           fillColor: colorScore(s.frame_score),
           strokeColor: s.frame_gt == 1 ? 'red' : 'blue'
         };
@@ -364,7 +362,29 @@
           // Select the corresponding cell
           d3.select(this).classed("selected", !priorSelection);
           d3.select(this).classed("hide", false);
-          // Update the current data, video and frame
+          // Update the current data, video and frame number
+          currentData = d.dataset.d;
+          currentVideo = d.video.v;
+          d3.select("#frame-count").text(d.frame_number);
+          // Update the video resolution
+          updateVideoConfiguration();
+          // Update the selectors
+          d3.select("#dataset-select").property("value", d.dataset.i);
+          d3.select("#video-select").selectAll("option").remove();
+          // Add videos
+          d3.select("#video-select")
+            .on("change", function () {
+              currentVideo = currentData.videos[+d3.select(this).property("value")];
+              // Reset the video
+              resetOperation();
+            })
+            .selectAll("option")
+            .data(currentData.videos)
+            .enter()
+            .append("option")
+            .attr("value", (_, i) => i)
+            .text(o => o.name);
+          d3.select("#video-select").property("value", d.video.i);
           // Show the tooltip
           return !priorSelection ? tipSwarmSelect.show(d) : tipSwarmSelect.hide(d);
         });
@@ -472,24 +492,8 @@
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps
     d3.select("input").property("disabled", false);
-    // Open the region scores json file and read the frames and region images
-    d3.json("./data/" + currentData.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + currentVideo.name + "/" + "region_scores.json").then(function (data) {
-      // Interrupt any transition
-      videoPlayerGroup.selectAll("image").interrupt();
-      // Clear any existing
-      videoPlayerGroup.selectAll("image").remove();
-      // Put image
-      videoPlayerGroup.selectAll("image")
-        .data(data.filter(d => d.frame_number == d3.select("#frame-count").text()))
-        .enter()
-        .append("svg:image")
-        .attr("x", videoImagePosX)
-        .attr("y", videoImagePosY)
-        .attr("height", videoImageHeight)
-        .attr("width", videoImageWidth)
-        .attr("xlink:href", d => "./data/" + currentData.name + "/frames/" + currentVideo.name + "/" + d.frame_filename)
-        .each(updateVideoRelatedStuff);
-    });
+    // Update the image
+    updateVideoFrame(d3.select("#frame-count").text());
   }
 
   /**
@@ -502,7 +506,16 @@
     d3.select("#stop-circles-button").classed("red", true);
     // Activate input for video fps
     d3.select("input").property("disabled", false);
+    // Reset the video settings
+    updateVideoConfiguration();
     // Pause the video and reset the frame-count to 1
+    updateVideoFrame();
+  }
+
+  /**
+   * Update video configuration.
+   */
+  function updateVideoConfiguration () {
     videoAlpha = currentData.resolution.width / currentData.resolution.height;
     if (videoAlpha < videoBeta) {
       var correctWidth = videoPlayerHeight * videoAlpha;
@@ -524,6 +537,12 @@
     // Reset the video domains
     videoX.domain([0, currentData.resolution.width]);
     videoY.domain([0, currentData.resolution.height]);
+  }
+
+  /**
+   * Update video frame.
+   */
+  function updateVideoFrame (frame_number = 1) {
     // Open the region scores json file and read the frames and region images
     d3.json("./data/" + currentData.name + "/" + currentMethod.name + "/" + currentClassifier.name + "/scores/" + currentVideo.name + "/" + "region_scores.json").then(function (data) {
       // Interrupt any transition
@@ -531,7 +550,8 @@
       // Clear any existing
       videoPlayerGroup.selectAll("image").remove();
       // Put image
-      videoPlayerGroup.selectAll("image").data([data[0]])
+      videoPlayerGroup.selectAll("image")
+        .data(data.filter(d => d.frame_number == frame_number))
         .enter()
         .append("svg:image")
         .attr("x", videoImagePosX)
@@ -702,12 +722,21 @@
    * @return {string}       The text to display in the tooltip.
    */
   function getSwarmToolTipText(s) {
-    return "Dataset: <strong>" + s.dataset.name + "</strong><br>" +
-      "Video: <strong>" + s.video.name + "</strong><br>" +
+    return "Dataset: <strong>" + s.dataset.d.name + "</strong><br>" +
+      "Video: <strong>" + s.video.v.name + "</strong><br>" +
       "Frame number: <strong>" + s.frame_number + "</strong><br>" +
       "Frame-level score: <strong>" + s.frame_score.toFixed(3) + "</strong><br>" +
       "Ground-truth: <strong>" + s.frame_gt + " (" + (s.frame_gt === 1 ? "abnormal" : "normal") + ")" + "</strong><br>" +
       "Absolute error: <strong>" + s.error.toFixed(3) + "</strong><br>";
+  }
+
+  /**
+   * Reset selected cell in the swarm plot.
+   */
+  function resetSelectedSwarmCell () {
+    swarmPlotGroup.selectAll("circle").classed("selected", false);
+    swarmPlotGroup.selectAll("circle").classed("hide", false);
+    tipSwarmSelect.hide();
   }
 
   /**
