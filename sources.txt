@@ -40,3 +40,6 @@ List of useful links:
 - http://datawanderings.com/2018/08/15/d3-js-v5-promise-syntax-examples/
 - https://stackoverflow.com/questions/57591529/how-to-create-a-beeswarm-plot-with-variable-radius-in-d3js-v5
 - https://blockbuilder.org/hydrosquall/983d19b42a62fd1651c2942fe6cfcfbe
+- https://stackoverflow.com/questions/52295482/click-outside-of-div-to-close-it-svg-d3-angular
+- https://stackoverflow.com/questions/25270896/get-class-of-selected-svg-element-in-d3
+- http://bl.ocks.org/jasondavies/3186840

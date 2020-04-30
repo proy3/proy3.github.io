@@ -139,6 +139,13 @@
     .attr("y", 0)
     .attr("height", regionImagesHeight)
     .attr("width", regionImagesWidth);
+
+  swarmPlotGroup.append("rect")
+    .attr("class", "border")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("height", swarmPlotHeight)
+    .attr("width", swarmPlotWidth);
   
   /***** Scales *****/
   var colorObjects = d3.scaleOrdinal(d3.schemeCategory10);
@@ -160,6 +167,13 @@
   var tipFrame = d3.tip()
     .attr('class', 'd3-tip')
     .offset([-10, -200]);
+  // tip for swarm plot
+  var tipSwarm = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0]);
+  var tipSwarmSelect = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10, 0]);
 
   // Specify the color domain
   colorObjects.domain(objectTypes);
@@ -248,10 +262,20 @@
     barChartBarsGroup.call(tip);
     tipFrame.html(d => getFrameToolTipText.call(this, d));
     videoPlayerGroup.call(tipFrame);
+    tipSwarm.html(d => getSwarmToolTipText.call(this, d));
+    swarmPlotGroup.call(tipSwarm);
+    tipSwarmSelect.html(d => getSwarmToolTipText.call(this, d));
+    swarmPlotGroup.call(tipSwarmSelect);
 
     // Show panel if clicked on video
     videoPlayerGroup.on("click", function () {
       videoPanel.classed("display", !videoPanel.classed("display"));
+    });
+
+    swarmPlotSvg.on("click", function () {
+      swarmPlotGroup.selectAll("circle").classed("selected", false);
+      swarmPlotGroup.selectAll("circle").classed("hide", false);
+      tipSwarmSelect.hide();
     });
 
     // Swarm plot
@@ -289,19 +313,23 @@
 
     // Load all scores
     Promise.all(scoresFiles.map(f => d3.json(f.path))).then(function (results) {
-      var globalData = d3.merge(results.map((scores, i) => scores.map(s => {
-        return {dataset: scoresFiles[i].dataset, video: scoresFiles[i].video, frame_number: s.frame_number, frame_score: s.frame_score, frame_gt: s.frame_gt, error: Math.abs(s.frame_score - s.frame_gt)};
-      })));
-
-      // Map the basic node data to d3-friendly format.
-      var nodes = globalData.map(function(node) {
+      // Collect all scores and map the basic node data to d3-friendly format.
+      var nodes = d3.merge(results.map((scores, i) => scores.map(s => {
+        var scoresFile = scoresFiles[i];
+        var scoreError = Math.abs(s.frame_score - s.frame_gt);
         return {
-          fillColor: colorScore(node.frame_score),
-          strokeColor: node.frame_gt == 1 ? 'red' : 'blue',
-          x: xSwarmPlot(node.error),
-          y: ySwarmPlot(node.dataset.name) + 150
+          dataset: scoresFile.dataset, 
+          video: scoresFile.video, 
+          frame_number: s.frame_number, 
+          frame_score: s.frame_score, 
+          frame_gt: s.frame_gt, 
+          error: scoreError, 
+          x: xSwarmPlot(scoreError), 
+          y: ySwarmPlot(scoresFile.dataset.name) + 150,
+          fillColor: colorScore(s.frame_score),
+          strokeColor: s.frame_gt == 1 ? 'red' : 'blue'
         };
-      });
+      })));
 
       //Defining the force simulation
       var simulation = d3.forceSimulation(nodes)
@@ -321,7 +349,25 @@
         .attr("cy", d => d.y)
         .attr("r", 3)
         .attr("fill", d => d.fillColor)
-        .attr("stroke", d => d.strokeColor);
+        .attr("stroke", d => d.strokeColor)
+        .on("mouseover", tipSwarm.show)
+        .on("mouseout", tipSwarm.hide)
+        .on('click', function(d) {
+          // Don't propagate to parent svg
+          d3.event.stopPropagation();
+          // Consecutive click will unselect
+          var priorSelection = d3.select(this).classed("selected");
+          // Unselect any selected cells 
+          swarmPlotGroup.selectAll("circle").classed("selected", false);
+          // Hide cells 
+          swarmPlotGroup.selectAll("circle").classed("hide", !priorSelection);
+          // Select the corresponding cell
+          d3.select(this).classed("selected", !priorSelection);
+          d3.select(this).classed("hide", false);
+          // Update the current data, video and frame
+          // Show the tooltip
+          return !priorSelection ? tipSwarmSelect.show(d) : tipSwarmSelect.hide(d);
+        });
     });
   });
     
@@ -647,6 +693,21 @@
     return "Frame number: <strong>" + f.frame_number + "</strong><br>" +
       "Frame-level score: <strong>" + f.frame_score.toFixed(3) + "</strong><br>" +
       "Ground-truth: <strong>" + f.frame_gt + " (" + (f.frame_gt === 1 ? "abnormal" : "normal") + ")";
+  }
+
+  /**
+   * Gets the text associated with the tooltip.
+   *
+   * @param s               The score cell hovered by the mouse.
+   * @return {string}       The text to display in the tooltip.
+   */
+  function getSwarmToolTipText(s) {
+    return "Dataset: <strong>" + s.dataset.name + "</strong><br>" +
+      "Video: <strong>" + s.video.name + "</strong><br>" +
+      "Frame number: <strong>" + s.frame_number + "</strong><br>" +
+      "Frame-level score: <strong>" + s.frame_score.toFixed(3) + "</strong><br>" +
+      "Ground-truth: <strong>" + s.frame_gt + " (" + (s.frame_gt === 1 ? "abnormal" : "normal") + ")" + "</strong><br>" +
+      "Absolute error: <strong>" + s.error.toFixed(3) + "</strong><br>";
   }
 
   /**
