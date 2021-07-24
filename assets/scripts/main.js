@@ -749,7 +749,7 @@
       .attr("y", 0)
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
-      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.appear_filename);
+      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.past_filename);
     realCurrGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
@@ -757,7 +757,7 @@
       .attr("y", 0)
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
-      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentMethod.name + "/" + region.appear_filename);
+      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.curr_filename);
     realNextGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
@@ -765,7 +765,7 @@
       .attr("y", 0)
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
-      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.motion_filename);
+      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.next_filename);
     fakeNextGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
@@ -773,7 +773,7 @@
       .attr("y", 0)
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
-      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentMethod.name + "/" + region.motion_filename);
+      .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentMethod.name + "/" + region.next_filename);
   }
 
 })(d3);
