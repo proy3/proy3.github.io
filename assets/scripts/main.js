@@ -6,12 +6,6 @@
   "use strict";
 
   /***** Configuration *****/
-  // load label to names mapping for visualization purposes
-  var objectTypes = [
-    'person', 'bicycle', 'car', 'motorcycle', 'bus', 
-    'train', 'truck', 'backpack', 'handbag', 'skateboard'
-  ];
-
   var currentData, currentVideo, currentMethod, currentClassifier;
   var videoImagePosX, videoImagePosY, videoImageHeight, videoImageWidth;
   var videoAlpha, videoBeta;
@@ -75,28 +69,28 @@
   var barChartBarsGroup = barChartGroup.append("g");
   var barChartAxisGroup = barChartGroup.append("g").attr("class", "axis y bar");
 
-  var realAppearSvg = videoPanel.select("#region-real-appear-svg")
+  var realPastSvg = videoPanel.select("#region-real-past-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
     .attr("height", regionImagesHeight + regionImagesMargin.top + regionImagesMargin.bottom);
-  var realAppearGroup = realAppearSvg.append("g")
+  var realPastGroup = realPastSvg.append("g")
     .attr("transform", "translate(" + regionImagesMargin.left + "," + regionImagesMargin.top + ")");
   
-  var fakeAppearSvg = videoPanel.select("#region-fake-appear-svg")
+  var realCurrSvg = videoPanel.select("#region-real-curr-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
     .attr("height", regionImagesHeight + regionImagesMargin.top + regionImagesMargin.bottom);
-  var fakeAppearGroup = fakeAppearSvg.append("g")
+  var realCurrGroup = realCurrSvg.append("g")
     .attr("transform", "translate(" + regionImagesMargin.left + "," + regionImagesMargin.top + ")");
 
-  var realMotionSvg = videoPanel.select("#region-real-motion-svg")
+  var realNextSvg = videoPanel.select("#region-real-next-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
     .attr("height", regionImagesHeight + regionImagesMargin.top + regionImagesMargin.bottom);
-  var realMotionGroup = realMotionSvg.append("g")
+  var realNextGroup = realNextSvg.append("g")
     .attr("transform", "translate(" + regionImagesMargin.left + "," + regionImagesMargin.top + ")");
 
-  var fakeMotionSvg = videoPanel.select("#region-fake-motion-svg")
+  var fakeNextSvg = videoPanel.select("#region-fake-next-svg")
     .attr("width", regionImagesWidth + regionImagesMargin.left + regionImagesMargin.right)
     .attr("height", regionImagesHeight + regionImagesMargin.top + regionImagesMargin.bottom);
-  var fakeMotionGroup = fakeMotionSvg.append("g")
+  var fakeNextGroup = fakeNextSvg.append("g")
     .attr("transform", "translate(" + regionImagesMargin.left + "," + regionImagesMargin.top + ")");
   
   var swarmPlotSvg = d3.select("#swarm-plot-svg")
@@ -112,28 +106,28 @@
     .attr("height", videoPlayerHeight)
     .attr("width", videoPlayerWidth);
   
-  realAppearGroup.append("rect")
+  realPastGroup.append("rect")
     .attr("class", "border")
     .attr("x", 0)
     .attr("y", 0)
     .attr("height", regionImagesHeight)
     .attr("width", regionImagesWidth);
   
-  fakeAppearGroup.append("rect")
+  realCurrGroup.append("rect")
     .attr("class", "border")
     .attr("x", 0)
     .attr("y", 0)
     .attr("height", regionImagesHeight)
     .attr("width", regionImagesWidth);
   
-  realMotionGroup.append("rect")
+  realNextGroup.append("rect")
     .attr("class", "border")
     .attr("x", 0)
     .attr("y", 0)
     .attr("height", regionImagesHeight)
     .attr("width", regionImagesWidth);
   
-  fakeMotionGroup.append("rect")
+  fakeNextGroup.append("rect")
     .attr("class", "border")
     .attr("x", 0)
     .attr("y", 0)
@@ -176,7 +170,6 @@
     .offset([-10, 0]);
 
   // Specify the color domain
-  colorObjects.domain(objectTypes);
   colorScore.domain([0, 1])
 
   // Specify the x domain for bar chart
@@ -590,7 +583,7 @@
       .attr("height", r => videoY(r.bounding_box.y2) - videoY(r.bounding_box.y1))
       .attr("width", r => videoX(r.bounding_box.x2) - videoX(r.bounding_box.x1))
       .attr("fill", r => colorScore(r.score))
-      .attr("stroke", r => colorObjects(r.label))
+      .attr("stroke", r => colorScore(r.score))
       .on("mouseover", function (r) {
         // Show the hovered region images in the panel
         // Update images inside the panel
@@ -681,10 +674,10 @@
     }
     else {
       // Clear any existing images
-      realAppearGroup.selectAll("image").remove();
-      fakeAppearGroup.selectAll("image").remove();
-      realMotionGroup.selectAll("image").remove();
-      fakeMotionGroup.selectAll("image").remove();
+      realPastGroup.selectAll("image").remove();
+      realCurrGroup.selectAll("image").remove();
+      realNextGroup.selectAll("image").remove();
+      fakeNextGroup.selectAll("image").remove();
 
       // remove any existing bar chart
       barChartBarsGroup.selectAll("*").remove();
@@ -699,7 +692,7 @@
    * @return {string}       The text to display in the tooltip.
    */
   function getBBoxToolTipText(r) {
-    return "Region: <strong>" + r.label + " #" + r.region_number + "</strong><br>" +
+    return "Region: <strong>" + "#" + r.region_number + "</strong><br>" +
       "Anomaly score: <strong>" + r.score.toFixed(3);
   }
 
@@ -744,12 +737,12 @@
    */
   function updateRegionImages(region) {
     // Clear any existing images
-    realAppearGroup.selectAll("image").remove();
-    fakeAppearGroup.selectAll("image").remove();
-    realMotionGroup.selectAll("image").remove();
-    fakeMotionGroup.selectAll("image").remove();
+    realPastGroup.selectAll("image").remove();
+    realCurrGroup.selectAll("image").remove();
+    realNextGroup.selectAll("image").remove();
+    fakeNextGroup.selectAll("image").remove();
     // Put images
-    realAppearGroup.selectAll("image").data([0])
+    realPastGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
       .attr("x", 0)
@@ -757,7 +750,7 @@
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
       .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.appear_filename);
-    fakeAppearGroup.selectAll("image").data([0])
+    realCurrGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
       .attr("x", 0)
@@ -765,7 +758,7 @@
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
       .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentMethod.name + "/" + region.appear_filename);
-    realMotionGroup.selectAll("image").data([0])
+    realNextGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
       .attr("x", 0)
@@ -773,7 +766,7 @@
       .attr("height", regionImagesHeight)
       .attr("width", regionImagesWidth)
       .attr("xlink:href", "./data/" + currentData.name + "/region/" + currentVideo.name + "/" + currentData.structures[0].name + "/" + region.motion_filename);
-    fakeMotionGroup.selectAll("image").data([0])
+    fakeNextGroup.selectAll("image").data([0])
       .enter()
       .append("svg:image")
       .attr("x", 0)
