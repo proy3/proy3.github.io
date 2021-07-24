@@ -43,3 +43,4 @@ List of useful links:
 - https://stackoverflow.com/questions/52295482/click-outside-of-div-to-close-it-svg-d3-angular
 - https://stackoverflow.com/questions/25270896/get-class-of-selected-svg-element-in-d3
 - http://bl.ocks.org/jasondavies/3186840
+- https://stackoverflow.com/questions/50605579/d3-how-to-move-a-vertical-line-in-horizontal-direction-and-support-pause-and

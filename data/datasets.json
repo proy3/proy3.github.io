@@ -8,27 +8,35 @@
         "videos": [
             {
                 "name": "01",
-                "size": 200
+                "size": 199
             },
             {
                 "name": "02",
-                "size": 200
+                "size": 199
+            },
+            {
+                "name": "03",
+                "size": 199
+            },
+            {
+                "name": "04",
+                "size": 199
             }
         ],
         "structures": [
             {
-                "name": "ds_50_v2",
-                "mod": "RetinaNet",
-                "mct": 50
+                "name": "ctdet_coco_hg",
+                "mod": "CenterNet",
+                "mct": 40
             }
         ],
         "models": [
             {
-                "name": "method_v1",
+                "name": "NextPredictionNet",
                 "classifiers": [
                     {
-                        "name": "method_v1_0_class_v1",
-                        "technique": "GAN"
+                        "name": "ssim",
+                        "technique": "Image Quality Measure"
                     }
                 ]
             }
@@ -43,39 +51,35 @@
         "videos": [
             {
                 "name": "01",
-                "size": 180
+                "size": 179
             },
             {
                 "name": "02",
-                "size": 180
+                "size": 179
             },
             {
                 "name": "03",
-                "size": 150
+                "size": 149
             },
             {
                 "name": "04",
-                "size": 180
-            },
-            {
-                "name": "05",
-                "size": 150
+                "size": 179
             }
         ],
         "structures": [
             {
-                "name": "ds_50_v2",
-                "mod": "RetinaNet",
-                "mct": 50
+                "name": "ctdet_coco_hg",
+                "mod": "CenterNet",
+                "mct": 40
             }
         ],
         "models": [
             {
-                "name": "method_v1",
+                "name": "NextPredictionNet",
                 "classifiers": [
                     {
-                        "name": "method_v1_0_class_v1",
-                        "technique": "GAN"
+                        "name": "ssim",
+                        "technique": "Image Quality Measure"
                     }
                 ]
             }
@@ -89,24 +93,24 @@
         },
         "videos": [
             {
-                "name": "01",
-                "size": 1439
+                "name": "09",
+                "size": 1174
             }
         ],
         "structures": [
             {
-                "name": "ds_50_v2",
-                "mod": "RetinaNet",
-                "mct": 50
+                "name": "ctdet_coco_hg",
+                "mod": "CenterNet",
+                "mct": 40
             }
         ],
         "models": [
             {
-                "name": "method_v1",
+                "name": "NextPredictionNet",
                 "classifiers": [
                     {
-                        "name": "method_v1_0_class_v1",
-                        "technique": "GAN"
+                        "name": "ssim",
+                        "technique": "Image Quality Measure"
                     }
                 ]
             }
@@ -120,32 +124,36 @@
         },
         "videos": [
             {
-                "name": "01_0014",
-                "size": 265
+                "name": "01_0053",
+                "size": 456
             },
             {
-                "name": "02_0128",
-                "size": 457
+                "name": "02_0161",
+                "size": 336
             },
             {
-                "name": "03_0031",
-                "size": 529
+                "name": "03_0033",
+                "size": 312
+            },
+            {
+                "name": "05_0020",
+                "size": 648
             }
         ],
         "structures": [
             {
-                "name": "ds_50_v2",
-                "mod": "RetinaNet",
-                "mct": 50
+                "name": "ctdet_coco_hg",
+                "mod": "CenterNet",
+                "mct": 40
             }
         ],
         "models": [
             {
-                "name": "method_v1",
+                "name": "NextPredictionNet",
                 "classifiers": [
                     {
-                        "name": "method_v1_0_class_v1",
-                        "technique": "GAN"
+                        "name": "ssim",
+                        "technique": "Image Quality Measure"
                     }
                 ]
             }
